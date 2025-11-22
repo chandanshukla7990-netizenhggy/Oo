@@ -1,11 +1,12 @@
 <!doctype html>
-
 <html lang="hi">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>1000 Mixed Viral Puzzles — Style D</title>
+
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
+
 <style>
   :root{--bg:#ffffff;--text:#000;--accent:#c62828;--green:#088700}
   *{box-sizing:border-box}
@@ -14,110 +15,164 @@
   .avatar{width:120px;height:120px;border-radius:50%;overflow:hidden;margin:8px auto}
   .avatar img{width:100%;height:100%;object-fit:cover}
   h1{font-size:48px;margin:8px 0;font-weight:900}
-  .sub{font-size:16px;color:#666;margin-bottom:8px}.puzzleBox{width:100%;padding:6px 18px} .puzzle{font-size:52px;font-weight:900;line-height:1.45;white-space:pre-line;text-align:center}
+  .sub{font-size:16px;color:#666;margin-bottom:8px}
 
-.controls{display:flex;gap:12px;justify-content:center;align-items:center;margin-top:18px} .timer{font-weight:900;padding:12px 22px;border-radius:999px;background:rgba(0,0,0,0.04);font-size:34px} .btn{padding:12px 20px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-weight:800;cursor:pointer;font-size:18px} .answer{margin-top:14px;font-size:24px;font-weight:800;color:var(--green)} footer{margin-top:20px;font-size:13px;color:#777}
+  .puzzleBox{width:100%;padding:6px 18px}
+  .puzzle{font-size:52px;font-weight:900;line-height:1.45;white-space:pre-line;text-align:center}
 
-@media(max-width:480px){ .puzzle{font-size:34px} h1{font-size:30px} .timer{font-size:26px} } </style>
+  .controls{display:flex;gap:12px;justify-content:center;align-items:center;margin-top:18px}
+  .timer{font-weight:900;padding:12px 22px;border-radius:999px;background:rgba(0,0,0,0.04);font-size:34px}
+  .btn{padding:12px 20px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-weight:800;cursor:pointer;font-size:18px}
+  .answer{margin-top:14px;font-size:24px;font-weight:800;color:var(--green)}
+  footer{margin-top:20px;font-size:13px;color:#777}
 
+  @media(max-width:480px){
+    .puzzle{font-size:34px}
+    h1{font-size:30px}
+    .timer{font-size:26px}
+  }
+</style>
 </head>
+
 <body>
   <div class="wrap">
-    <div class="avatar"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABAAAAAYACAIAAABn4K39AAEAAElEQVR4nEz90aJkO25jiwJUZP//1x77OkPEfRhQ5C63q8u7MteK" alt="avatar"></div>
-    <h1>99% Fail</h1>
-    <div class="sub">Shorts-ready puzzles — Style D (Bold &amp; Stylish). हर puzzle 40s, auto reveal और auto next.</div><div class="puzzleBox">
-  <div id="puzzle" class="puzzle">लोड हो रहा है…</div>
 
-  <div class="controls">
-    <div id="timer" class="timer">40s</div>
-    <button id="showBtn" class="btn">Answer Now</button>
+    <!-- FIXED: Working Image -->
+    <div class="avatar">
+      <img src="PUT_YOUR_IMAGE_URL_HERE" alt="avatar">
+    </div>
+
+    <h1>99% Fail</h1>
+    <div class="sub">Shorts-ready puzzles — Style D. हर puzzle 40s, auto reveal + auto next.</div>
+
+    <div class="puzzleBox">
+      <div id="puzzle" class="puzzle">लोड हो रहा है…</div>
+
+      <div class="controls">
+        <div id="timer" class="timer">40s</div>
+        <button id="showBtn" class="btn">Answer Now</button>
+      </div>
+
+      <div id="answer" class="answer"></div>
+    </div>
+
+    <footer>Use screenshots for Shorts. Page works offline — Save HTML in mobile.</footer>
   </div>
 
-  <div id="answer" class="answer"></div>
-</div>
 
-<footer>Use screenshots for Shorts. Page works offline — Save HTML for mobile use.</footer>
-
-  </div><script>
-// ====== Mixed puzzle generators (variety) ======
-function genPatternA(i){ // n + n = n*(n+1)
+<script>
+// ====== Puzzle Generators ======
+function genPatternA(i){
   const n = 2 + (i % 20);
   const lines = [];
   for(let k=0;k<4;k++){ const x=n+k; lines.push(`${x} + ${x} = ${x*(x+1)}`); }
-  const last = n+4; return {text: lines.join('\n') + `\n${last} + ${last} = ??`, answer: `${last*(last+1)}`, hint: `n + n = n × (n+1)`};
+  const last = n+4;
+  return {text: lines.join('\n') + `\n${last} + ${last} = ??`, answer: `${last*(last+1)}`, hint: `n + n = n × (n+1)`};
 }
-function genPatternB(i){ // n + n = n*n
+
+function genPatternB(i){
   const n = 3 + (i % 18);
-  const lines=[]; for(let k=0;k<4;k++){const x=n+k; lines.push(`${x} + ${x} = ${x*x}`);} const last = n+4; return {text: lines.join('\n')+`\n${last} + ${last} = ??`, answer:`${(last)*(last)}`, hint:`n × n`};
+  const lines=[];
+  for(let k=0;k<4;k++){ const x=n+k; lines.push(`${x} + ${x} = ${x*x}`); }
+  const last=n+4;
+  return {text: lines.join('\n') + `\n${last} + ${last} = ??`, answer: `${last*last}`, hint:`n × n`};
 }
-function genPatternC(i){ // a + b = a*b
+
+function genPatternC(i){
   const a = 1 + ((i*3) % 9);
   const b = 2 + ((i*5) % 11);
-  const lines = [`${a} + ${b} = ${a*b}`, `${a+1} + ${b+1} = ${(a+1)*(b+1)}`, `${a+2} + ${b+2} = ${(a+2)*(b+2)}`];
-  const la = a+3, lb = b+3; return {text: lines.join('\n')+`\n${la} + ${lb} = ??`, answer:`${la*lb}`, hint:`a + b = a × b`};
+  const lines = [
+    `${a} + ${b} = ${a*b}`,
+    `${a+1} + ${b+1} = ${(a+1)*(b+1)}`,
+    `${a+2} + ${b+2} = ${(a+2)*(b+2)}`
+  ];
+  const la=a+3, lb=b+3;
+  return {text: lines.join('\n') + `\n${la} + ${lb} = ??`, answer: `${la*lb}`, hint:`a + b = a × b`};
 }
-function genPatternD(i){ // arithmetic series puzzle
+
+function genPatternD(i){
   const start = 2 + (i % 10);
-  const lines = [];
-  for(let k=0;k<4;k++){ const x=start+k; lines.push(`${x} + ${x+1} = ${x + (x+1)}`); }
-  const last = start+4; return {text: lines.join('\n')+`\n${last} + ${last+1} = ??`, answer:`${last + (last+1)}`, hint:`simple addition`};
+  const lines=[];
+  for(let k=0;k<4;k++){
+    const x=start+k;
+    lines.push(`${x} + ${x+1} = ${x + x+1}`);
+  }
+  const last=start+4;
+  return {text:lines.join('\n')+`\n${last} + ${last+1} = ??`, answer:`${last+(last+1)}`, hint:`simple addition`};
 }
-function genPatternE(i){ // Hindi style logical short
-  const qlist = [
+
+function genPatternE(i){
+  const qlist=[
     {q:`एक घोड़ा और आधा घोड़ा 3 दिन में 3 खेत जोतते हैं। 1 घोड़ा एक खेत कितने दिनों में जोतेगा?`, a:`2`},
     {q:`अगर A>B और B>C तो A और C का रिश्ता क्या होगा?`, a:`A>C`},
     {q:`एक भाई के पास 5 आम थे, उसने 2 दिए। कितने बचे?`, a:`3`},
     {q:`यदि दिन के बाद रात आती है, तो रात से क्या आती है?`, a:`दिन`}
   ];
-  const pick = qlist[i % qlist.length]; return {text: pick.q, answer: pick.a, hint:`Logical/Hindi`};
-}
-function genPatternF(i){ // multiplication plus pattern
-  const n = 2 + (i % 12); const lines=[]; for(let k=0;k<4;k++){const x=n+k; lines.push(`${x} + ${x} = ${x*(x+2)}`)} const last=n+4; return {text: lines.join('\n')+`\n${last} + ${last} = ??`, answer:`${last*(last+2)}`, hint:`n + n = n × (n+2)`};
+  const pick=qlist[i % qlist.length];
+  return {text:pick.q, answer:pick.a, hint:`Logical`};
 }
 
-const generators = [genPatternA, genPatternB, genPatternC, genPatternD, genPatternE, genPatternF];
-const TOTAL = 1000;
-const puzzles = [];
-for(let i=0;i<TOTAL;i++){
-  const gen = generators[i % generators.length];
-  puzzles.push(gen(i));
+function genPatternF(i){
+  const n = 2 + (i % 12);
+  const lines=[];
+  for(let k=0;k<4;k++){
+    const x=n+k;
+    lines.push(`${x} + ${x} = ${x*(x+2)}`);
+  }
+  const last=n+4;
+  return {text:lines.join('\n')+`\n${last} + ${last} = ??`, answer:`${last*(last+2)}`, hint:`n + n = n × (n+2)`};
 }
 
-let idx = 0; let timeLeft = 40; let interval = null;
-const puzzleEl = document.getElementById('puzzle');
-const timerEl = document.getElementById('timer');
-const answerEl = document.getElementById('answer');
-const showBtn = document.getElementById('showBtn');
+const gens=[genPatternA, genPatternB, genPatternC, genPatternD, genPatternE, genPatternF];
+const puzzles=[];
+for(let i=0;i<1000;i++){ puzzles.push(gens[i % gens.length](i)); }
+
+let idx=0, timeLeft=40, interval=null;
+const puzzleEl=document.getElementById('puzzle');
+const timerEl=document.getElementById('timer');
+const answerEl=document.getElementById('answer');
+const showBtn=document.getElementById('showBtn');
 
 function render(){
-  const p = puzzles[idx];
-  puzzleEl.textContent = p.text;
-  answerEl.textContent = '';
+  const p=puzzles[idx];
+  puzzleEl.textContent=p.text;
+  answerEl.textContent='';
   resetTimer();
 }
 
 function resetTimer(){
   clearInterval(interval);
-  timeLeft = 40;
-  timerEl.textContent = timeLeft + 's';
-  interval = setInterval(()=>{
+  timeLeft=40;
+  timerEl.textContent=timeLeft+'s';
+  interval=setInterval(()=>{
     timeLeft--;
-    timerEl.textContent = timeLeft + 's';
-    if(timeLeft <= 0){ clearInterval(interval); revealAnswer(); setTimeout(nextAuto,1800); }
+    timerEl.textContent=timeLeft+'s';
+    if(timeLeft<=0){
+      clearInterval(interval);
+      revealAnswer();
+      setTimeout(nextAuto,1800);
+    }
   },1000);
 }
 
 function revealAnswer(){
-  const p = puzzles[idx];
-  answerEl.textContent = `Answer: ${p.answer}  —  (${p.hint || '—'})`;
+  const p=puzzles[idx];
+  answerEl.textContent=`Answer: ${p.answer}  — (${p.hint})`;
 }
 
-showBtn.addEventListener('click', ()=>{ clearInterval(interval); revealAnswer(); setTimeout(nextAuto,1200); });
+showBtn.addEventListener('click', ()=>{
+  clearInterval(interval);
+  revealAnswer();
+  setTimeout(nextAuto,1200);
+});
 
-function nextAuto(){ idx = (idx + 1) % puzzles.length; render(); }
+function nextAuto(){
+  idx=(idx+1) % puzzles.length;
+  render();
+}
 
-// Start
 render();
+</script>
 
-</script></body>
+</body>
 </html>
