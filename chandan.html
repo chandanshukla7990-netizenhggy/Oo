@@ -1,0 +1,205 @@
+<!doctype html>
+
+<html lang="hi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Auto Quiz — 4 Minute Timed Questions</title>
+  <style>
+    :root{--bg:#fff7fb;--card:#fff;--primary:#ff6b6b;--muted:#6b7280}
+    *{box-sizing:border-box}
+    body{font-family:Inter, system-ui, Arial; background:var(--bg); margin:0;padding:24px;display:flex;align-items:center;justify-content:center;min-height:100vh}
+    .app{width:100%;max-width:720px}
+    .card{background:var(--card);border-radius:12px;padding:20px;box-shadow:0 8px 30px rgba(13,12,20,0.06)}
+    .header{display:none;}
+    h1{font-size:20px;margin:0}
+    .controls{display:flex;gap:8px;align-items:center}
+    button{border:0;padding:8px 12px;border-radius:8px;cursor:pointer;background:var(--primary);color:white}
+    .timer{font-weight:700;color:var(--primary);font-size:18px}
+    .question{font-size:26px;font-weight:700;margin:12px 0 20px;text-align:center;}
+    .options{display:block !important;margin-top:16px;}
+    .opt{padding:14px;border-radius:10px;border:1px solid #eee;cursor:pointer;background:#fafafa;color:#000;font-weight:600;}
+    .opt.disabled{pointer-events:none;opacity:0.85}
+    .opt.correct{background:#e6ffef;border-color:#7bd69b}
+    .opt.wrong{background:#ffecec;border-color:#ff9b9b}
+    .meta{display:none;}
+    .small{font-size:13px}
+    .footer{display:none;}
+    @media(max-width:520px){.options{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="app card">
+    <div class="header">
+      <h1>Auto Quiz — हर सवाल 4 मिनट</h1>
+      <div class="controls">
+        <div class="timer" id="timer">04:00</div>
+        <button id="pauseBtn">Pause</button>
+      </div>
+    </div><div id="content">
+  <div id="circleTimer" style="width:90px;height:90px;border:4px solid #ff6b6b;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 15px;font-size:22px;font-weight:700;color:#ff6b6b;">90</div>
+  <div style="text-align:center;font-size:20px;font-weight:700;margin-bottom:10px;">अगर जोस में पढ़ाई करते हो। तो उत्तर दो।</div>
+  <div class="question" id="question">लोड हो रहा है…</div>
+  <div class="options" id="options"></div>
+  <div class="meta">
+    <div class="small" id="qIndex">Q 0 / 0</div>
+    <div class="small" id="revealNote">जवाब ऑटो दिखेगा जब टाइम पूरा होगा</div>
+  </div>
+  <div class="footer">
+    <button id="prevBtn">पिछला</button>
+    <button id="nextBtn">अगला</button>
+  </div>
+</div>
+
+  </div><script>
+// ====== CONFIG ======
+const QUESTION_TIME_SECONDS = 90; // 4 minutes = 240 seconds
+const AUTO_ADVANCE_AFTER_ANSWER_MS = 3000; // उत्तर दिखाने के बाद अगला सवाल कितने ms में आये
+// ====================
+
+// Example questions array. Use as many as you like; the script will loop infinitely.
+const questions = [
+  {q: '8 × 8 + 8 ÷ 4 = ?', options: ['16','32','64','66'], answerIndex: 1},
+  {q: 'यदि 5 + 3 × 2 = ?', options: ['16','11','13','10'], answerIndex: 3},
+  {q: '10 ÷ 2 + 6 = ?', options: ['11','8','16','10'], answerIndex: 0},
+  {q: '2³ = ?', options: ['4','6','8','9'], answerIndex: 2},
+  // add more items here. format: {q: 'question text', options: ['a','b','c','d'], answerIndex: 0-based}
+];
+
+// state
+let idx = 0;
+let remaining = QUESTION_TIME_SECONDS;
+let intervalHandle = null;
+let paused = false;
+let revealed = false;
+
+// dom refs
+const timerEl = document.getElementById('timer');
+const qEl = document.getElementById('question');
+const optsEl = document.getElementById('options');
+const qIndexEl = document.getElementById('qIndex');
+const pauseBtn = document.getElementById('pauseBtn');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+
+function pad(n){return n.toString().padStart(2,'0')}
+function renderTimer(){
+  const mm = Math.floor(remaining/60);
+  const ss = remaining % 60;
+  timerEl.textContent = pad(mm)+':'+pad(ss);
+  const ct = document.getElementById('circleTimer');
+  if(ct) ct.textContent = remaining;
+}
+
+function renderQuestion(){
+  const item = questions[idx];
+  qEl.textContent = item.q;
+  optsEl.innerHTML = '';
+  optsEl.style.display = 'grid';;
+  item.options.forEach((text,i)=>{
+    const b = document.createElement('button');
+    b.className = 'opt';
+    b.innerHTML = `<strong>${String.fromCharCode(65+i)}</strong> &nbsp; ${text}`;
+    b.onclick = ()=> selectOption(i);
+    optsEl.appendChild(b);
+  });
+  qIndexEl.textContent = `Q ${idx+1} / ${questions.length}`;
+  revealed = false;
+}
+
+function revealAnswer(){
+  if(revealed) return;
+  revealed = true;
+  const item = questions[idx];
+  const children = Array.from(optsEl.children);
+  children.forEach((el,i)=>{
+    el.classList.add('disabled');
+    if(i === item.answerIndex) el.classList.add('correct');
+    else el.classList.add('wrong');
+  });
+}
+
+function selectOption(i){
+  // optional: allow user to choose before time. If choose wrong, show result & then reveal
+  const item = questions[idx];
+  revealAnswer();
+  // highlight selected if wrong
+  if(i !== item.answerIndex){
+    const chosen = optsEl.children[i];
+    chosen.classList.add('wrong');
+  }
+  // advance after small delay
+  clearInterval(intervalHandle);
+  setTimeout(()=> nextQuestion(), AUTO_ADVANCE_AFTER_ANSWER_MS);
+}
+
+function nextQuestion(){
+  idx = (idx + 1) % questions.length; // loop infinitely
+  remaining = QUESTION_TIME_SECONDS;
+  renderQuestion();
+  renderTimer();
+  startTimer();
+}
+
+function prevQuestion(){
+  idx = (idx - 1 + questions.length) % questions.length;
+  remaining = QUESTION_TIME_SECONDS;
+  renderQuestion();
+  renderTimer();
+  startTimer();
+}
+
+function startTimer(){
+  stopTimer();
+  intervalHandle = setInterval(()=>{
+    if(paused) return;
+    remaining -= 1;
+    if(remaining <= 0){
+      remaining = 0;
+      renderTimer();
+      revealAnswer();
+      stopTimer();
+      setTimeout(()=> nextQuestion(), AUTO_ADVANCE_AFTER_ANSWER_MS);
+    } else {
+      renderTimer();
+    }
+  },1000);
+}
+
+function stopTimer(){ if(intervalHandle) { clearInterval(intervalHandle); intervalHandle=null } }
+
+pauseBtn.addEventListener('click', ()=>{
+  paused = !paused;
+  pauseBtn.textContent = paused ? 'Resume' : 'Pause';
+});
+nextBtn.addEventListener('click', ()=>{
+  // manual next: reveal immediately then go next
+  revealAnswer();
+  clearInterval(intervalHandle);
+  setTimeout(()=> nextQuestion(), AUTO_ADVANCE_AFTER_ANSWER_MS);
+});
+prevBtn.addEventListener('click', ()=>{
+  prevQuestion();
+});
+
+// keyboard support
+document.addEventListener('keydown', (e)=>{
+  if(e.key === ' '){ // space pause/resume
+    e.preventDefault(); paused = !paused; pauseBtn.textContent = paused ? 'Resume' : 'Pause';
+  }
+  if(e.key === 'ArrowRight') nextBtn.click();
+  if(e.key === 'ArrowLeft') prevBtn.click();
+});
+
+// init
+renderQuestion();
+renderTimer();
+startTimer();
+
+// Helpful: expose a function to add new questions dynamically from console
+window.addQuestion = function(qText, options, answerIdx){
+  questions.push({q:qText, options:options, answerIndex:answerIdx});
+}
+
+</script></body>
+</html>
